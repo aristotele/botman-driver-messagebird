@@ -1,0 +1,49 @@
+{
+  "name": "botman/driver-messagebird",
+  "license": "MIT",
+  "description": "Messagebird driver for BotMan",
+  "keywords": [
+    "Bot",
+    "BotMan",
+    "Messagebird"
+  ],
+  "authors": [
+    {
+      "name": "Aristotele Tufano",
+      "email": "chibaku106@gmail.com"
+    }
+  ],
+  "require": {
+    "php": ">=7.0",
+    "botman/botman": "~2.0",
+    "messagebird/php-rest-api": "^1.16"
+  },
+  "require-dev": {
+    "botman/studio-addons": "~1.0",
+    "illuminate/support": "~5.5.0",
+    "phpunit/phpunit": "~5.0",
+    "mockery/mockery": "dev-master",
+    "ext-curl": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "BotMan\\Drivers\\Messagebird\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "test": "vendor/bin/phpunit",
+    "cs": "php-cs-fixer fix"
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "BotMan\\Drivers\\Messagebird\\Providers\\MessagebirdServiceProvider"
+      ]
+    }
+  }
+}
