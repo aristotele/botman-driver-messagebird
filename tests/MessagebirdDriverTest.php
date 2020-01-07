@@ -204,6 +204,7 @@ class MessagebirdDriverTest extends TestCase
         $config = [
             'messagebird' => [
                 'accessKey' => 'pm3CSy68hRXRWbfRsGU2Jza7A',
+                'isSandboxEnabled' => true,
                 'senderPhoneNumber' => '447418310508',
                 'channelId' => '1cf5b8c9f58b499fa3cdaf5661e1f4f6'
             ]

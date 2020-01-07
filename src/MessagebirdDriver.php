@@ -40,11 +40,15 @@ class MessagebirdDriver extends HttpDriver
 
     public function getClient(\MessageBird\Common\HttpClient $httpClient = null)
     {
+        $clientConfig = $this->config->get('isSandboxEnabled') === true
+            ? Client::ENABLE_CONVERSATIONSAPI_WHATSAPP_SANDBOX
+            : '';
+
         if (! $this->client) {
             $this->client = new Client(
                 $this->config->get('accessKey'),
                 $httpClient,
-                [Client::ENABLE_CONVERSATIONSAPI_WHATSAPP_SANDBOX]
+                [$clientConfig]
             );
         }
 
