@@ -1,0 +1,4 @@
+{
+  "botman/driver-config": ["stubs/messagebird.php"],
+  "botman/driver": ["BotMan\\Drivers\\Messagebird\\MessagebirdDriver"]
+}
