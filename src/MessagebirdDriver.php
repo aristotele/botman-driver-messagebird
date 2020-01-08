@@ -165,7 +165,7 @@ class MessagebirdDriver extends HttpDriver
 
     public function isConfigured()
     {
-        return true;
+        return !empty($this->config->get('accessKey'));
     }
 
     public function sendRequest($endpoint, array $parameters, IncomingMessage $matchingMessage)

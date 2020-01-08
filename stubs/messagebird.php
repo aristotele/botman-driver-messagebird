@@ -9,6 +9,11 @@ return [
     'accessKey' => env('MESSAGEBIRD_ACCESS_KEY'),
 
     /**
+     * Enables messagebird sandbox endpoint.
+     */
+    'isSandboxEnabled' => env('MESSAGEBIRD_SANDBOX', false),
+
+    /**
      * The number to buy from Messagebird.
      *
      * While testing Whatsapp, use the sandbox phone number.

@@ -82,6 +82,14 @@ class MessagebirdDriverTest extends TestCase
     }
 
     /** @test */
+    public function it_is_configured()
+    {
+        $driver = $this->getValidDriverWith('text');
+
+        $this->assertTrue($driver->isConfigured());
+    }
+
+    /** @test */
     public function it_returns_the_sender_phone_number()
     {
         $driver = $this->getValidDriverWith('image');
@@ -128,14 +136,14 @@ class MessagebirdDriverTest extends TestCase
     {
         $driver = $this->getValidDriverWith('text');
 
-        $mock = m::mock(\MessageBird\Common\HttpClient::class, ['https://whatsapp-sandbox.messagebird.com/v1'])->makePartial();
-        $mock->shouldReceive('performHttpRequest')
-            ->withArgs(function ($method, $resourceName, $query = null, $body = null) {
+        // $mock = m::mock(\MessageBird\Common\HttpClient::class, ['https://whatsapp-sandbox.messagebird.com/v1'])->makePartial();
+        // $mock->shouldReceive('performHttpRequest')
+        //     ->withArgs(function ($method, $resourceName, $query = null, $body = null) {
 
-            })
-            ->andReturn();
+        //     })
+        //     ->andReturn();
 
-        $driver->getClient($mock);
+        // $driver->getClient($mock);
 
         $incomingMessage = new IncomingMessage(
             'message from Aris',
