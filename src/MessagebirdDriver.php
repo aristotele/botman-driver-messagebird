@@ -21,9 +21,6 @@ class MessagebirdDriver extends HttpDriver
     const MESSAGE_TEXT = 'text';
     const MESSAGE_TYPE_IMAGE = 'image';
 
-    /** @var OutgoingMessage[] */
-    protected $replies = [];
-
     /** @var array */
     protected $messages = [];
 
@@ -40,13 +37,13 @@ class MessagebirdDriver extends HttpDriver
 
     public function getClient(\MessageBird\Common\HttpClient $httpClient = null)
     {
-        $clientConfig = $this->config->get('isSandboxEnabled') === true
+        $clientConfig = $this->config->get('is_sandbox_enabled') === true
             ? Client::ENABLE_CONVERSATIONSAPI_WHATSAPP_SANDBOX
             : '';
 
         if (! $this->client) {
             $this->client = new Client(
-                $this->config->get('accessKey'),
+                $this->config->get('access_key'),
                 $httpClient,
                 [$clientConfig]
             );
@@ -105,7 +102,6 @@ class MessagebirdDriver extends HttpDriver
 
             $incomingMessage->setText($text);
 
-            // die(var_export($incomingMessage));
             $this->messages = [$incomingMessage];
         }
 
@@ -129,7 +125,8 @@ class MessagebirdDriver extends HttpDriver
         $text = '';
 
         $parameters['recipient'] = trim($incomingMessage->getSender(), '+'); // get phone number without '+'
-        $parameters['channelId'] = $this->config->get('channelId');
+        $parameters['channelId'] = $this->payload['message']['channelId'];
+
 
         if ($outgoingMessage instanceof OutgoingMessage) {
             $text = $outgoingMessage->getText();
@@ -137,7 +134,6 @@ class MessagebirdDriver extends HttpDriver
 
         $parameters['text'] = $text;
 
-        // die(var_export($parameters));
         return $parameters;
     }
 
@@ -165,17 +161,11 @@ class MessagebirdDriver extends HttpDriver
 
     public function isConfigured()
     {
-        return !empty($this->config->get('accessKey'));
+        return !empty($this->config->get('access_key'));
     }
 
     public function sendRequest($endpoint, array $parameters, IncomingMessage $matchingMessage)
     {
-    }
-
-    // by aris, not needed
-    public function getReplies()
-    {
-        return $this->replies;
     }
 
     public function types(IncomingMessage $matchingMessage)
