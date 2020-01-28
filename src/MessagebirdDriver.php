@@ -125,7 +125,11 @@ class MessagebirdDriver extends HttpDriver
         $text = '';
 
         $parameters['recipient'] = trim($incomingMessage->getSender(), '+'); // get phone number without '+'
-        $parameters['channelId'] = $this->payload['message']['channelId'];
+        if (isset($this->payload['message']['channelId'])) {
+            $parameters['channelId'] = $this->payload['message']['channelId'];
+        } else {
+            $parameters['channelId'] = $this->getDefaultChannelId();
+        }
 
 
         if ($outgoingMessage instanceof OutgoingMessage) {
@@ -155,39 +159,33 @@ class MessagebirdDriver extends HttpDriver
         }
     }
 
-    public function messagesHandled()
-    {
-    }
-
     public function isConfigured()
     {
         return !empty($this->config->get('access_key'));
     }
 
-    public function sendRequest($endpoint, array $parameters, IncomingMessage $matchingMessage)
-    {
-    }
-
-    public function types(IncomingMessage $matchingMessage)
-    {
-    }
-
-    public function typesAndWaits(IncomingMessage $matchingMessage, float $seconds)
-    {
-    }
-
     public function getConversationAnswer(IncomingMessage $message)
     {
-        // need review...what does exactly do?
         $answer = Answer::create($message->getText())
-            ->setValue($message->getText())
-            ->setInteractiveReply(true)
-            ->setMessage($message);
+                ->setValue($message->getText())
+                ->setInteractiveReply(true)
+                ->setMessage($message);
 
         return $answer;
     }
 
-    public function hasMatchingEvent()
+    public function messagesHandled() {}
+
+    public function sendRequest($endpoint, array $parameters, IncomingMessage $matchingMessage) {}
+
+    public function types(IncomingMessage $matchingMessage) {}
+
+    public function typesAndWaits(IncomingMessage $matchingMessage, float $seconds) {}
+
+    public function hasMatchingEvent() {}
+
+    private function getDefaultChannelId()
     {
+        return $this->config->get('channel_id');
     }
 }
