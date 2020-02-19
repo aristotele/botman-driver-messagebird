@@ -152,11 +152,18 @@ class MessagebirdDriver extends HttpDriver
         $message->to = $payload['recipient']; // Channel-specific, e.g. MSISDN for SMS.
         $message->type = 'text';
 
-        try {
-            $conversation = $this->getClient()->conversations->start($message);
-        } catch (\Exception $e) {
-            echo sprintf("%s: %s", get_class($e), $e->getMessage());
-        }
+        // may throw exception
+        $conversation = $this->getClient()->conversations->start($message);
+
+        // try {
+        //     $conversation = $this->getClient()->conversations->start($message);
+        // } catch (\Exception $e) {
+        //     $feedback = sprintf("%s: %s", get_class($e), $e->getMessage());
+        //     echo $feedback;
+        //     \Log::info('FEEDBACK ' . var_export($feedback, true));
+
+        //     throw $e;
+        // }
     }
 
     public function isConfigured()
