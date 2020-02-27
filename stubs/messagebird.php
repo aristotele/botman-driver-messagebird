@@ -14,20 +14,15 @@ return [
     'is_sandbox_enabled' => env('MESSAGEBIRD_SANDBOX', false),
 
     /**
-     * The number bought from Messagebird.
-     *
-     * While testing Whatsapp, use the sandbox phone number.
-     * https://dashboard.messagebird.com/en/whatsapp/sandbox
+     * Put here the list of your messagebird's channels
      */
-    'phone_number' => env('MESSAGEBIRD_SENDER_PHONE_NUMBER'),
+    'channels' => [
 
-    /**
-     * The channel configured on Messagebird Account. [Telegram, Whatsapp, ...]
-     * https://dashboard.messagebird.com/en/channels
-     *
-     * While testing Whatsapp, use the sandbox channelId
-     * https://dashboard.messagebird.com/en/whatsapp/sandbox
-     */
-    'channel_id' => env('MESSAGEBIRD_DEFAULT_CHANNEL_ID'),
+        'whatsapp' => [
+            // '<phone_number_with_without_plus>' => '<channelId>'
+            // '39338' => 'aadf834993'
+        ]
+
+    ]
 
 ];

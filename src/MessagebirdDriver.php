@@ -125,12 +125,13 @@ class MessagebirdDriver extends HttpDriver
         $text = '';
 
         $parameters['recipient'] = trim($incomingMessage->getSender(), '+'); // get phone number without '+'
+
         if (isset($this->payload['message']['channelId'])) {
             $parameters['channelId'] = $this->payload['message']['channelId'];
-        } else {
-            $parameters['channelId'] = $this->getDefaultChannelId();
+        } elseif (array_key_exists('sender', $additionalParameters)) {
+                $sender = $additionalParameters['sender'];
+                $parameters['channelId'] = $this->config->get("channels")['whatsapp'][$sender];
         }
-
 
         if ($outgoingMessage instanceof OutgoingMessage) {
             $text = $outgoingMessage->getText();
@@ -191,8 +192,4 @@ class MessagebirdDriver extends HttpDriver
 
     public function hasMatchingEvent() {}
 
-    private function getDefaultChannelId()
-    {
-        return $this->config->get('channel_id');
-    }
 }

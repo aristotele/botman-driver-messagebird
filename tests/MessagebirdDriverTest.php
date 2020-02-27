@@ -16,7 +16,7 @@ class MessagebirdDriverTest extends TestCase
 {
     const DAVID_NUMBER = '393381234567';
     const SANDBOX_NUMBER = '447418310508';
-    const SANDBOX_CHANNEL_ID = '1cf5b8c9f58b499fa3cdaf5661e1f4f6';
+    const SANDBOX_CHANNEL_ID = '1cf5b8c9f58b499fa3cdafaaaaaaaaaa';
 
     /** @test */
     public function it_returns_the_driver_name()
@@ -132,6 +132,41 @@ class MessagebirdDriverTest extends TestCase
     }
 
     /** @test */
+    public function it_can_originate_message_from_a_webhook()
+    {
+        $recipient = '347';
+        $textMessage = 'Message from space';
+        $additionalParameters = [
+            'sender' => '338'
+        ];
+        $sender = $additionalParameters['sender'];
+
+        $driver = $this->getDriver();
+
+        // mimic botman@say
+        $incomingMessage = new IncomingMessage('', $recipient, '');
+
+        // mimic botman@reply
+        $outgoingMessage = new OutgoingMessage($textMessage);
+        $payload = $driver->buildServicePayload(
+            $outgoingMessage,
+            $incomingMessage,
+            $additionalParameters
+        );
+
+        $this->assertEquals($textMessage, $payload['text']);
+
+        // destinatario
+        $this->assertEquals($recipient, $payload['recipient']);
+
+        // id canale
+        $this->assertEquals(
+            $driver->getConfig()->get('channels')['whatsapp'][$sender],
+            $payload['channelId']
+        );
+    }
+
+    /** @test */
     public function it_can_send_payload()
     {
         $driver = $this->getValidDriverWith('text');
@@ -212,7 +247,13 @@ class MessagebirdDriverTest extends TestCase
         $config = [
             'messagebird' => [
                 'access_key' => 'pm3CSy12hRXRWbfRsGU2Jza7A',
-                'is_sandbox_enabled' => true
+                'is_sandbox_enabled' => true,
+                'channels' => [
+                    'whatsapp' => [
+                        '338' => 'aaa',
+                        '333' => 'bbb'
+                    ]
+                ]
             ]
         ];
 
@@ -255,7 +296,7 @@ class MessagebirdDriverTest extends TestCase
                 'createdDatetime' => '2019-12-18T11:22:26Z',
                 'updatedDatetime' => '2019-12-26T15:21:51.661632042Z',
                 'lastReceivedDatetime' => '2019-12-26T15:23:31.953871499Z',
-                'lastUsedChannelId' => '1cf5b8c9f58b499fa3cdaf5661e1f4f6',
+                'lastUsedChannelId' => '1cf5b8c9f58b499fa3cdafaaaaaaaaaa',
                 'messages' => [
                     'totalCount' => 0,
                     'href' => 'https://whatsapp-sandbox.messagebird.com/v1/conversations/24728835c0424a6985714a2a172eb01f/messages',
@@ -268,7 +309,7 @@ class MessagebirdDriverTest extends TestCase
                 'platform' => 'whatsapp',
                 'to' => "+393381234567",
                 'from' => "+447418310508",
-                'channelId' => '1cf5b8c9f58b499fa3cdaf5661e1f4f6',
+                'channelId' => '1cf5b8c9f58b499fa3cdafaaaaaaaaaa',
                 'type' => 'text',
                 'content' => [
                     'text' => 'Hei dude, from postman!',
@@ -306,7 +347,7 @@ class MessagebirdDriverTest extends TestCase
                 'createdDatetime' => '2019-12-18T11:22:26Z',
                 'updatedDatetime' => '2019-12-30T11:04:23.157720227Z',
                 'lastReceivedDatetime' => '2019-12-30T11:09:43.667144441Z',
-                'lastUsedChannelId' => '1cf5b8c9f58b499fa3cdaf5661e1f4f6',
+                'lastUsedChannelId' => '1cf5b8c9f58b499fa3cdafaaaaaaaaaa',
                 'messages' => [
                     'totalCount' => 0,
                     'href' => 'https://whatsapp-sandbox.messagebird.com/v1/conversations/24728835c0424a6985714a2a172eb01f/messages',
@@ -319,7 +360,7 @@ class MessagebirdDriverTest extends TestCase
                 'platform' => 'whatsapp',
                 'to' => '+393381234567',
                 'from' => '+447418310508',
-                'channelId' => '1cf5b8c9f58b499fa3cdaf5661e1f4f6',
+                'channelId' => '1cf5b8c9f58b499fa3cdafaaaaaaaaaa',
                 'type' => 'image',
                 'content' => [
                     'image' => [
