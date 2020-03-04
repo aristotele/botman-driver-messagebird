@@ -5,9 +5,10 @@ namespace BotMan\Drivers\Messagebird;
 use MessageBird\Client;
 use BotMan\BotMan\Users\User;
 use Illuminate\Support\Collection;
+use MessageBird\Common\HttpClient;
 use BotMan\BotMan\Drivers\HttpDriver;
-use BotMan\BotMan\Messages\Attachments\Image;
 use BotMan\BotMan\Messages\Incoming\Answer;
+use BotMan\BotMan\Messages\Attachments\Image;
 use MessageBird\Objects\Conversation\Content;
 use MessageBird\Objects\Conversation\Message;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,14 +19,28 @@ class MessagebirdDriver extends HttpDriver
 {
     const DRIVER_NAME = 'Messagebird';
 
+    const CONVERSATIONSAPI_ENDPOINT = 'https://conversations.messagebird.com/v1';
+    const ENABLE_CONVERSATIONSAPI_WHATSAPP_SANDBOX = 'ENABLE_CONVERSATIONSAPI_WHATSAPP_SANDBOX';
+    const CONVERSATIONSAPI_WHATSAPP_SANDBOX_ENDPOINT = 'https://whatsapp-sandbox.messagebird.com/v1';
+
     const MESSAGE_TEXT = 'text';
     const MESSAGE_TYPE_IMAGE = 'image';
 
     /** @var array */
     protected $messages = [];
 
-    /** @var Client */
+    /** @var \MessageBird\Client */
     protected $client;
+
+    /** @var \MessageBird\Common\HttpClient */
+    protected $ConversationsAPIHttpClient;
+
+    /** @var int */
+    protected $clientConnectionTimeout = 10;
+
+    /** @var int */
+    protected $clientTimeout = 15;
+
 
     public function buildPayload(Request $request)
     {
@@ -35,7 +50,13 @@ class MessagebirdDriver extends HttpDriver
         $this->config = Collection::make($this->config->get('messagebird', []));
     }
 
-    public function getClient(\MessageBird\Common\HttpClient $httpClient = null)
+    /**
+     * Get Messagebird Client to interact with their API.
+     *
+     * @param \MessageBird\Common\HttpClient $httpClient
+     * @return \MessageBird\Client
+     */
+    public function getClient(HttpClient $httpClient = null)
     {
         $clientConfig = $this->config->get('is_sandbox_enabled') === true
             ? Client::ENABLE_CONVERSATIONSAPI_WHATSAPP_SANDBOX
@@ -50,6 +71,29 @@ class MessagebirdDriver extends HttpDriver
         }
 
         return $this->client;
+    }
+
+    /**
+     * Get underlying HTTP client responsible of cURL calls.
+     * It is configured to interact with messagebird's conversations endpoints.
+     *
+     * @return \MessageBird\Common\HttpClient
+     */
+    public function getConversationsAPIHttpClient()
+    {
+        if (! $this->ConversationsAPIHttpClient) {
+            $clientEndpoint = $this->config->get('is_sandbox_enabled') === true
+                ? Client::CONVERSATIONSAPI_WHATSAPP_SANDBOX_ENDPOINT
+                : Client::CONVERSATIONSAPI_ENDPOINT;
+
+            return new HttpClient(
+                $clientEndpoint,
+                $this->config->get('timeout') ?? $this->clientTimeout,
+                $this->config->get('connection_timeout') ?? $this->clientConnectionTimeout
+            );
+        }
+
+        return $this->ConversationsAPIHttpClient;
     }
 
     public function getUser(IncomingMessage $matchingMessage)
@@ -154,7 +198,7 @@ class MessagebirdDriver extends HttpDriver
         $message->type = 'text';
 
         // may throw exception
-        $conversation = $this->getClient()->conversations->start($message);
+        $conversation = $this->getClient($this->getConversationsAPIHttpClient())->conversations->start($message);
 
         // try {
         //     $conversation = $this->getClient()->conversations->start($message);

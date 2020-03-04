@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
 use BotMan\Drivers\Messagebird\MessagebirdDriver;
 use BotMan\BotMan\Messages\Incoming\IncomingMessage;
 use BotMan\BotMan\Messages\Outgoing\OutgoingMessage;
+use MessageBird\Common\HttpClient;
 
 class MessagebirdDriverTest extends TestCase
 {
@@ -231,9 +232,20 @@ class MessagebirdDriverTest extends TestCase
     {
         $driver = $this->getValidDriverWith('text');
 
-        $driver->getClient();
-
         $this->assertInstanceOf(Client::class, $driver->getClient());
+    }
+
+    /** @test */
+    public function it_has_an_http_client()
+    {
+        $driver = $this->getValidDriverWith('text');
+
+        $httpClient = $driver->getConversationsAPIHttpClient();
+
+        // $this->assertEquals(10, $httpClient->connectionTimeout);
+        // $this->assertEquals(15, $httpClient->timeout);
+
+        $this->assertInstanceOf(HttpClient::class, $httpClient);
     }
 
     /** HELPER FUNCTIONS */
@@ -253,7 +265,9 @@ class MessagebirdDriverTest extends TestCase
                         '338' => 'aaa',
                         '333' => 'bbb'
                     ]
-                ]
+                ],
+                'connection_timeout' => 10,
+                'timeout' => 15
             ]
         ];
 
