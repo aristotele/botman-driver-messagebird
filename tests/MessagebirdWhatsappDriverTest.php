@@ -4,16 +4,17 @@ namespace Tests;
 
 use Mockery as m;
 use MessageBird\Client;
+use Illuminate\Support\Str;
 use BotMan\BotMan\Http\Curl;
 use PHPUnit\Framework\TestCase;
+use MessageBird\Common\HttpClient;
 use BotMan\BotMan\Messages\Attachments\Image;
 use Symfony\Component\HttpFoundation\Request;
-use BotMan\Drivers\Messagebird\MessagebirdDriver;
 use BotMan\BotMan\Messages\Incoming\IncomingMessage;
 use BotMan\BotMan\Messages\Outgoing\OutgoingMessage;
-use MessageBird\Common\HttpClient;
+use BotMan\Drivers\Messagebird\MessagebirdWhatsappDriver;
 
-class MessagebirdDriverTest extends TestCase
+class MessagebirdWhatsappDriverTest extends TestCase
 {
     const DAVID_NUMBER = '393381234567';
     const SANDBOX_NUMBER = '447418310508';
@@ -24,40 +25,45 @@ class MessagebirdDriverTest extends TestCase
     {
         $driver = $this->getDriver();
 
-        $this->assertSame('Messagebird', $driver->getName());
+        $this->assertSame('MessagebirdWhatsapp', $driver->getName());
     }
 
     /** @test */
     public function it_matches_the_request()
     {
         $driver = $this->getValidDriverWith('text');
-
         $this->assertTrue($driver->matchesRequest());
 
         $driver = $this->getValidDriverWith('image');
+        $this->assertTrue($driver->matchesRequest());
 
+        $driver = $this->getValidDriverWith('audio');
         $this->assertTrue($driver->matchesRequest());
     }
 
     /** @test */
-    public function it_can_handle_incoming_message_with_text_only()
+    public function it_can_handle_incoming_message_of_type_text()
     {
         $driver = $this->getValidDriverWith('text');
         $this->assertTrue(is_array($driver->getMessages()));
         $this->assertNotEmpty($driver->getMessages());
 
+        /** @var IncomingMessage */
         $message = $driver->getMessages()[0];
         $this->assertInstanceOf(IncomingMessage::class, $message);
+        $this->assertEquals('text', $message->getPayload()['message']['type']);
+
         $this->assertEquals('Hei dude, from postman!', $message->getText());
     }
 
     /** @test */
-    public function it_can_handle_incoming_message_with_image_and_text()
+    public function it_can_handle_incoming_message_of_type_image()
     {
         $driver = $this->getValidDriverWith('image');
         $this->assertTrue(is_array($driver->getMessages()));
         $this->assertNotEmpty($driver->getMessages());
 
+        /** @var IncomingMessage */
         $message = $driver->getMessages()[0];
         $this->assertInstanceOf(IncomingMessage::class, $message);
         $this->assertNotEmpty($message->getImages());
@@ -70,6 +76,21 @@ class MessagebirdDriverTest extends TestCase
         );
 
         $this->assertEquals('Just a tree...', $image->getTitle());
+    }
+
+    /** @test */
+    public function it_can_handle_incoming_message_of_type_audio()
+    {
+        $driver = $this->getValidDriverWith('audio');
+        $this->assertTrue(is_array($driver->getMessages()));
+        $this->assertNotEmpty($driver->getMessages());
+
+        /** @var IncomingMessage */
+        $message = $driver->getMessages()[0];
+        $this->assertInstanceOf(IncomingMessage::class, $message);
+        $this->assertEquals('audio', $message->getPayload()['message']['type']);
+
+        $this->assertTrue(Str::startsWith($message->getAudio()[0]->getUrl(), 'http'));
     }
 
     /** @test */
@@ -138,9 +159,9 @@ class MessagebirdDriverTest extends TestCase
         $recipient = '347';
         $textMessage = 'Message from space';
         $additionalParameters = [
-            'sender' => '338'
+            'sender_channel_id' => '338'
         ];
-        $sender = $additionalParameters['sender'];
+        $sender = $additionalParameters['sender_channel_id'];
 
         $driver = $this->getDriver();
 
@@ -161,10 +182,7 @@ class MessagebirdDriverTest extends TestCase
         $this->assertEquals($recipient, $payload['recipient']);
 
         // id canale
-        $this->assertEquals(
-            $driver->getConfig()->get('channels')['whatsapp'][$sender],
-            $payload['channelId']
-        );
+        $this->assertEquals($sender, $payload['channelId'] );
     }
 
     /** @test */
@@ -260,18 +278,12 @@ class MessagebirdDriverTest extends TestCase
             'messagebird' => [
                 'access_key' => 'pm3CSy12hRXRWbfRsGU2Jza7A',
                 'is_sandbox_enabled' => true,
-                'channels' => [
-                    'whatsapp' => [
-                        '338' => 'aaa',
-                        '333' => 'bbb'
-                    ]
-                ],
                 'connection_timeout' => 10,
                 'timeout' => 15
             ]
         ];
 
-        $driver = new MessagebirdDriver($request, $config, $htmlInterface);
+        $driver = new MessagebirdWhatsappDriver($request, $config, $htmlInterface);
 
         return $driver;
     }
@@ -281,6 +293,9 @@ class MessagebirdDriverTest extends TestCase
         switch ($requestType) {
             case 'image':
                 return $this->getDriver($this->getImageMessageFakeRequest());
+
+            case 'audio':
+                return $this->getDriver($this->getAudioMessageFakeRequest());
 
             default:
                 return $this->getDriver($this->getTextMessageFakeRequest());
@@ -387,6 +402,59 @@ class MessagebirdDriverTest extends TestCase
                 'status' => 'pending',
                 'createdDatetime' => '2019-12-30T11:09:43.667144441Z',
                 'updatedDatetime' => '2019-12-30T11:09:43.676592022Z',
+            ],
+
+            'type' => 'message.created',
+        ];
+    }
+
+    private function getAudioMessageFakeRequest()
+    {
+        return [
+            'contact' => [
+                'id' => '30d5cb6b79984a13b7c6f990e781722a',
+                'href' => NULL,
+                'msisdn' => 393383342437,
+                'displayName' => '393383342437',
+                'firstName' => NULL,
+                'lastName' => NULL,
+                'customDetails' => [],
+                'attributes' => [],
+                'createdDatetime' => '2019-12-18T11:22:26Z',
+                'updatedDatetime' => '2020-04-24T11:43:16Z',
+            ],
+
+            'conversation' => [
+                'id' => '6118481c213d440ba93868557fca1dc1',
+                'contactId' => '30d5cb6b79984a13b7c6f990e781722a',
+                'status' => 'active',
+                'createdDatetime' => '2019-12-18T11:22:26Z',
+                'updatedDatetime' => '2020-06-09T16:06:37.486504642Z',
+                'lastReceivedDatetime' => '2020-06-09T16:09:19.846679813Z',
+                'lastUsedChannelId' => '11a976e320d04baaa01382783727e8c5',
+                'messages' => [
+                    'totalCount' => 0,
+                    'href' => 'https://whatsapp-sandbox.messagebird.com/v1/conversations/6118481c213d440ba93868557fca1dc1/messages',
+                ],
+            ],
+
+            'message' => [
+                'id' => 'c4a5cb6c9acc4eca9dbee9f619f9c1d7',
+                'conversationId' => '6118481c213d440ba93868557fca1dc1',
+                'platform' => 'whatsapp',
+                'to' => '+447418310508',
+                'from' => '+393383342437',
+                'channelId' => '11a976e320d04baaa01382783727e8c5',
+                'type' => 'audio',
+                'content' => [
+                    'audio' => [
+                        'url' => 'https://media.messagebird.com/v1/media/52296e61-9e62-479b-9ce0-9cadebe40598',
+                    ],
+                ],
+                'direction' => 'received',
+                'status' => 'received',
+                'createdDatetime' => '2020-06-09T16:09:17Z',
+                'updatedDatetime' => '2020-06-09T16:09:19.8536614Z',
             ],
 
             'type' => 'message.created',

@@ -4,8 +4,8 @@ namespace BotMan\Drivers\Messagebird\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use BotMan\BotMan\Drivers\DriverManager;
-use BotMan\Drivers\Messagebird\MessagebirdDriver;
 use BotMan\Studio\Providers\StudioServiceProvider;
+use BotMan\Drivers\Messagebird\MessagebirdWhatsappDriver;
 
 class MessagebirdServiceProvider extends ServiceProvider
 {
@@ -24,7 +24,7 @@ class MessagebirdServiceProvider extends ServiceProvider
 
     protected function loadDrivers()
     {
-        DriverManager::loadDriver(MessagebirdDriver::class);
+        DriverManager::loadDriver(MessagebirdWhatsappDriver::class);
     }
 
     protected function isRunningInBotManStudio()
