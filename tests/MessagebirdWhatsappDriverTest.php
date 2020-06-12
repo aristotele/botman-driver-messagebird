@@ -29,6 +29,13 @@ class MessagebirdWhatsappDriverTest extends TestCase
     }
 
     /** @test */
+    public function it_matches_the_request_with_signature()
+    {
+        $driver = $this->getValidDriverWith('validation');
+        $this->assertTrue($driver->matchesRequest());
+    }
+
+    /** @test */
     public function it_matches_the_request()
     {
         $driver = $this->getValidDriverWith('text');
@@ -270,6 +277,11 @@ class MessagebirdWhatsappDriverTest extends TestCase
     private function getDriver($parameters = [], $htmlInterface = null)
     {
         $request = Request::create('', 'POST', $parameters);
+
+        $request->headers->set('HTTP_MESSAGEBIRD_REQUEST_TIMESTAMP', '1591724293');
+        $request->headers->set('HTTP_MESSAGEBIRD_SIGNATURE', 'lJh4PuCMLwbKhF/vq87QdonQH2wKONAdR8yu/DOwwos=');
+        $request->headers->set('QUERY_STRING', '');
+
         if ($htmlInterface === null) {
             $htmlInterface = m::mock(Curl::class);
         }
@@ -285,6 +297,8 @@ class MessagebirdWhatsappDriverTest extends TestCase
 
         $driver = new MessagebirdWhatsappDriver($request, $config, $htmlInterface);
 
+        // dd($driver);
+
         return $driver;
     }
 
@@ -296,6 +310,9 @@ class MessagebirdWhatsappDriverTest extends TestCase
 
             case 'audio':
                 return $this->getDriver($this->getAudioMessageFakeRequest());
+
+            case 'validation':
+                return $this->getDriver($this->getValidationFakeRequest());
 
             default:
                 return $this->getDriver($this->getTextMessageFakeRequest());
@@ -457,6 +474,56 @@ class MessagebirdWhatsappDriverTest extends TestCase
                 'updatedDatetime' => '2020-06-09T16:09:19.8536614Z',
             ],
 
+            'type' => 'message.created',
+        ];
+    }
+
+    private function getValidationFakeRequest()
+    {
+        return [
+            'contact' => [
+                'id' => '30d5cb6b79984a13b7c6f990e781722a',
+                'href' => NULL,
+                'msisdn' => 393383342437,
+                'displayName' => '393383342437',
+                'firstName' => NULL,
+                'lastName' => NULL,
+                'customDetails' => [],
+                'attributes' => [],
+                'createdDatetime' => '2019-12-18T11:22:26Z',
+                'updatedDatetime' => '2020-04-24T11:43:16Z',
+            ],
+
+            'conversation' => [
+                'id' => '6118481c213d440ba93868557fca1dc1',
+                'contactId' => '30d5cb6b79984a13b7c6f990e781722a',
+                'status' => 'active',
+                'createdDatetime' => '2019-12-18T11:22:26Z',
+                'updatedDatetime' => '2020-06-09T16:43:34.869680434Z',
+                'lastReceivedDatetime' => '2020-06-09T17:37:35.376393032Z',
+                'lastUsedChannelId' => '11a976e320d04baaa01382783727e8c5',
+                'messages' => [
+                    'totalCount' => 0,
+                    'href' => 'https://whatsapp-sandbox.messagebird.com/v1/conversations/6118481c213d440ba93868557fca1dc1/messages',
+                ],
+            ],
+
+            'message' => [
+                'id' => '8d6789031f2847edb81b79bb84dfed40',
+                'conversationId' => '6118481c213d440ba93868557fca1dc1',
+                'platform' => 'whatsapp',
+                'to' => '+393383342437',
+                'from' => '+447418310508',
+                'channelId' => '11a976e320d04baaa01382783727e8c5',
+                'type' => 'text',
+                'content' => [
+                    'text' => 'From postman!',
+                ],
+                'direction' => 'sent',
+                'status' => 'pending',
+                'createdDatetime' => '2020-06-09T17:37:34Z',
+                'updatedDatetime' => '2020-06-09T17:37:35.385204203Z',
+            ],
             'type' => 'message.created',
         ];
     }
