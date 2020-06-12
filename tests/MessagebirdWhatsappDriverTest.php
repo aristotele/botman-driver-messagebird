@@ -31,7 +31,8 @@ class MessagebirdWhatsappDriverTest extends TestCase
     /** @test */
     public function it_matches_the_request_with_signature()
     {
-        $driver = $this->getValidDriverWith('validation');
+        $driver = $this->getValidDriverWith('text');
+
         $this->assertTrue($driver->matchesRequest());
     }
 
@@ -115,7 +116,7 @@ class MessagebirdWhatsappDriverTest extends TestCase
     {
         $driver = $this->getValidDriverWith('text');
 
-        $this->assertTrue($driver->isConfigured());
+        $this->assertTrue($driver->isConfigured(), "Put your correct access_key @getDriver()");
     }
 
     /** @test */
@@ -276,11 +277,11 @@ class MessagebirdWhatsappDriverTest extends TestCase
     /** HELPER FUNCTIONS */
     private function getDriver($parameters = [], $htmlInterface = null)
     {
-        $request = Request::create('', 'POST', $parameters);
+        $request = Request::create('', 'POST', $parameters, [], [], [], $this->getDummyRequestBody());
 
-        $request->headers->set('HTTP_MESSAGEBIRD_REQUEST_TIMESTAMP', '1591724293');
-        $request->headers->set('HTTP_MESSAGEBIRD_SIGNATURE', 'lJh4PuCMLwbKhF/vq87QdonQH2wKONAdR8yu/DOwwos=');
-        $request->headers->set('QUERY_STRING', '');
+        $request->query->add([]);
+        $request->headers->set('messagebird-signature', 'it26SSv/qkoxQ5xfPe5MYF9nddcHbqMTcToqLL4+Udk=');
+        $request->headers->set('messagebird-request-timestamp', '1591949471');
 
         if ($htmlInterface === null) {
             $htmlInterface = m::mock(Curl::class);
@@ -288,16 +289,15 @@ class MessagebirdWhatsappDriverTest extends TestCase
 
         $config = [
             'messagebird' => [
-                'access_key' => 'pm3CSy12hRXRWbfRsGU2Jza7A',
+                'access_key' => '',
                 'is_sandbox_enabled' => true,
+                'signing_key' => 'tN3jfxydr6DtgJhUX0zsiiGZaREoRFud',
                 'connection_timeout' => 10,
                 'timeout' => 15
             ]
         ];
 
         $driver = new MessagebirdWhatsappDriver($request, $config, $htmlInterface);
-
-        // dd($driver);
 
         return $driver;
     }
@@ -310,9 +310,6 @@ class MessagebirdWhatsappDriverTest extends TestCase
 
             case 'audio':
                 return $this->getDriver($this->getAudioMessageFakeRequest());
-
-            case 'validation':
-                return $this->getDriver($this->getValidationFakeRequest());
 
             default:
                 return $this->getDriver($this->getTextMessageFakeRequest());
@@ -478,53 +475,8 @@ class MessagebirdWhatsappDriverTest extends TestCase
         ];
     }
 
-    private function getValidationFakeRequest()
+    private function getDummyRequestBody()
     {
-        return [
-            'contact' => [
-                'id' => '30d5cb6b79984a13b7c6f990e781722a',
-                'href' => NULL,
-                'msisdn' => 393383342437,
-                'displayName' => '393383342437',
-                'firstName' => NULL,
-                'lastName' => NULL,
-                'customDetails' => [],
-                'attributes' => [],
-                'createdDatetime' => '2019-12-18T11:22:26Z',
-                'updatedDatetime' => '2020-04-24T11:43:16Z',
-            ],
-
-            'conversation' => [
-                'id' => '6118481c213d440ba93868557fca1dc1',
-                'contactId' => '30d5cb6b79984a13b7c6f990e781722a',
-                'status' => 'active',
-                'createdDatetime' => '2019-12-18T11:22:26Z',
-                'updatedDatetime' => '2020-06-09T16:43:34.869680434Z',
-                'lastReceivedDatetime' => '2020-06-09T17:37:35.376393032Z',
-                'lastUsedChannelId' => '11a976e320d04baaa01382783727e8c5',
-                'messages' => [
-                    'totalCount' => 0,
-                    'href' => 'https://whatsapp-sandbox.messagebird.com/v1/conversations/6118481c213d440ba93868557fca1dc1/messages',
-                ],
-            ],
-
-            'message' => [
-                'id' => '8d6789031f2847edb81b79bb84dfed40',
-                'conversationId' => '6118481c213d440ba93868557fca1dc1',
-                'platform' => 'whatsapp',
-                'to' => '+393383342437',
-                'from' => '+447418310508',
-                'channelId' => '11a976e320d04baaa01382783727e8c5',
-                'type' => 'text',
-                'content' => [
-                    'text' => 'From postman!',
-                ],
-                'direction' => 'sent',
-                'status' => 'pending',
-                'createdDatetime' => '2020-06-09T17:37:34Z',
-                'updatedDatetime' => '2020-06-09T17:37:35.385204203Z',
-            ],
-            'type' => 'message.created',
-        ];
+        return '{"contact":{"id":"30d5cb6b79984a13b7c6f990e781722a","href":"","msisdn":393383342437,"displayName":"393383342437","firstName":"","lastName":"","customDetails":{},"attributes":{},"createdDatetime":"2019-12-18T11:22:26Z","updatedDatetime":"2020-04-24T11:43:16Z"},"conversation":{"id":"6118481c213d440ba93868557fca1dc1","contactId":"30d5cb6b79984a13b7c6f990e781722a","status":"active","createdDatetime":"2019-12-18T11:22:26Z","updatedDatetime":"2020-06-12T08:10:07.744164323Z","lastReceivedDatetime":"2020-06-12T08:11:10.925995073Z","lastUsedChannelId":"11a976e320d04baaa01382783727e8c5","messages":{"totalCount":0,"href":"https://whatsapp-sandbox.messagebird.com/v1/conversations/6118481c213d440ba93868557fca1dc1/messages"}},"message":{"id":"b88ff4db73be4bd58c2c56cb3bbb1004","conversationId":"6118481c213d440ba93868557fca1dc1","platform":"whatsapp","to":"+447418310508","from":"+393383342437","channelId":"11a976e320d04baaa01382783727e8c5","type":"text","content":{"text":"hi"},"direction":"received","status":"received","createdDatetime":"2020-06-12T08:11:10Z","updatedDatetime":"2020-06-12T08:11:10.935687353Z"},"type":"message.created"}';
     }
 }

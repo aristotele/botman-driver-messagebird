@@ -43,8 +43,7 @@ class MessagebirdWhatsappDriver extends MessagebirdDriver
     public function matchesRequest()
     {
         if (isset($this->event->get('message')['platform'])) {
-            return $this->event->get('message')['platform'] == 'whatsapp' &&
-            $this->isSignatureValid();
+            return ($this->event->get('message')['platform'] == 'whatsapp') && $this->isSignatureValid();
         }
 
         return false;
